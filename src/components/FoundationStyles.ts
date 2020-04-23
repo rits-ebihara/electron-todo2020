@@ -11,8 +11,8 @@ export const GlobalStyle = createGlobalStyle`
     html, body {
         font-family: "Meiryo UI";
         font-size: 12pt;
-        height: 100%;
-        width: 100%;
+        height: 100vh;
+        width: 100vw;
     }
     button {
         background-color: #ccc;

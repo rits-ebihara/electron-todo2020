@@ -17,4 +17,5 @@ export interface ITask {
 export interface ITaskList {
   /** タスクの一覧 */
   tasks: ITask[];
+  loading: boolean;
 }

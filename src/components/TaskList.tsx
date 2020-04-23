@@ -6,6 +6,7 @@ import AddTask from './AddTask';
 import { styled } from './FoundationStyles';
 import TaskRow from './TaskRow';
 import { getTaskList } from '../actions/TaskActions';
+import Loading from './Loading';
 
 // #region styled
 const MainContainer = styled.div`
@@ -41,7 +42,7 @@ const createTaskList = (tasks: ITask[]): JSX.Element[] => {
         : 1;
     })
     .map(it => {
-      return <TaskRow key={it.id} {...it} />;
+      return <TaskRow key={it.id} {...{ data: it }} />;
     });
 };
 
@@ -61,6 +62,7 @@ const TaskListContainer: React.FC = () => {
         <AddTask />
         <TaskList>{taskListElement}</TaskList>
       </MainContainer>
+      <Loading shown={taskList.loading} />
     </div>
   );
 };

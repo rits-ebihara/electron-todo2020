@@ -1,8 +1,8 @@
 import moment from 'moment';
 import React, { useCallback, useMemo, MouseEvent } from 'react';
-import { deleteTaskAction, toggleCompleteAction } from '../actions/TaskActions';
+import { useDispatch } from 'react-redux';
+import { deleteTask, toggleTask } from '../actions/TaskActions';
 import { ITask } from '../states/ITask';
-import store from '../Store';
 import { styled } from './FoundationStyles';
 
 // #region styled
@@ -82,35 +82,39 @@ const Deadline = styled.div``;
 
 // #endregion
 
-const TaskRow: React.FC<ITask> = props => {
+const TaskRow: React.FC<{ data: ITask }> = props => {
+  const { data } = props;
+  const dispatch = useDispatch();
   // 未完了で有効期限を超過していないか
   const expiration = useMemo(() => {
-    return new Date() < props.deadline || props.complete;
-  }, [props.deadline, props.complete]);
+    return new Date() < data.deadline || data.complete;
+  }, [data.deadline, data.complete]);
   // 期限の表示書式に合わせた変換
   const deadlineString = useMemo(() => {
-    return moment(props.deadline).format('YYYY-MM-DD HH:mm');
-  }, [props.deadline]);
+    return moment(data.deadline).format('YYYY-MM-DD HH:mm');
+  }, [data.deadline]);
   // 行をクリックしたときのイベント
   const onRowClick = useCallback(() => {
-    store.dispatch(toggleCompleteAction(props.id));
-  }, [props.id]);
+    toggleTask(data, dispatch);
+  }, [data]);
   // 削除ボタンを押した時のイベント
   const onDeleteClick = useCallback(
     (e: MouseEvent<HTMLDivElement>) => {
-      store.dispatch(deleteTaskAction(props.id));
+      deleteTask(data.id, dispatch);
       // クリックイベントを親要素の伝播させない
       e.stopPropagation();
     },
-    [props.id],
+    [data.id],
   );
+  // -----------------
+  // レンダリング
   return (
     <Task expiration={expiration} onClick={onRowClick}>
       <TaskCheckBox>
-        <TaskCheck>{props.complete ? '✔' : null}</TaskCheck>
+        <TaskCheck>{data.complete ? '✔' : null}</TaskCheck>
       </TaskCheckBox>
       <TaskBody>
-        <TaskName>{props.taskName}</TaskName>
+        <TaskName>{data.taskName}</TaskName>
         <Deadline>⏰{deadlineString}</Deadline>
       </TaskBody>
       <TaskRemove onClick={onDeleteClick}>❌</TaskRemove>
