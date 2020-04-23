@@ -1,0 +1,8 @@
+{
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "codemetrics.nodeconfiguration.ArrowFunction": 0,
+    "codemetrics.nodeconfiguration.JsxElement": 0,
+    "codemetrics.nodeconfiguration.JsxSelfClosingElement": 0,
+    "codemetrics.nodeconfiguration.ReturnStatement": 0,
+}

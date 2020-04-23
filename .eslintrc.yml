@@ -1,0 +1,45 @@
+env:
+  browser: true
+  es6: true
+  node: true
+extends:
+  - 'plugin:react/recommended'
+  - google
+  - 'plugin:@typescript-eslint/recommended'
+  # 上の定義の整形に関するルールを無効化
+  # eslint-config-prettier が必要
+  - prettier
+globals:
+  Atomics: readonly
+  SharedArrayBuffer: readonly
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaFeatures:
+    jsx: true
+  ecmaVersion: 2018
+  sourceType: module
+plugins:
+  - react
+  - '@typescript-eslint'
+  # eslint-plugin-prettier の追加
+  - prettier
+settings:
+  react:
+    version: detect
+rules:
+  # no-used は TypeScript のコンパイラチェッカでチェックされる
+  no-unused-vars: 0
+  # 関数の複雑さを 10 以下にする
+  complexity: ['error', 10]
+  # React のプロパティの型チェックを省略する (TypeScript でチェックされるため)
+  react/prop-types: off
+  # jsdoc で型指定が無いとエラーになるが TypeScript はソースでわかるので無効化する
+  # ver 5.10 で廃止されている
+  valid-jsdoc: 0
+  # インターフェースの先頭文字を "I" にする
+  '@typescript-eslint/interface-name-prefix':
+    - error
+    - prefixWithI: 'always'
+  # prettier のチェックでErrorとするための設定。
+  prettier/prettier:
+    - error
