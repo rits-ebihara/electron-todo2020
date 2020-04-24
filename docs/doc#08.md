@@ -218,10 +218,106 @@ describe('loadTaskList', () => {
   このように、値の確認だけでなく、関数が実行されたか否かの確認もできます。検証対象の関数は、モック化されている必要があります。
 - (f)...ここでは、`todo.json`ファイルが無いこと前提のテストなので、(d)とは逆にそれぞれの関数が呼ばれることを確認しています。さらに、正しい引数で呼ばれているかも確認しています。
 
-## アクションのテストコード
+## Action のテスト
 
 Redux のテストは、それぞれ役割が分かれており、それぞれのテストが非常に簡単です。
 
 Action は、'actionCreator'で作成されたものはテストを作成する必要はないでしょう。
 
 非同期の処理の関数を書いていくことになります。
+
+```ts:__tests__/action/TaskActions.test.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { getTaskList, showTaskListAction } from '../../src/actions/TaskActions';
+import { ITask } from '../../src/states/ITask';
+
+const dispatch = jest.fn(); // --(a)
+
+const loadTaskList = jest.fn(); // --(b)
+
+// window オブジェクトのモック化
+(global as any).window = {
+  core: {
+    loadTaskList,
+  },
+};
+
+const testTaskList: ITask[] = [
+  {
+    complete: false,
+    deadline: new Date('2020-04-24T15:02:00.000Z'),
+    id: 'x001',
+    taskName: 'name001',
+  },
+  {
+    complete: false,
+    deadline: new Date('2020-04-25T12:02:00.000Z'),
+    id: 'x002',
+    taskName: 'name002',
+  },
+];
+
+describe('getTaskList', () => {
+  test('success', async () => {
+    // モックの作成
+    loadTaskList.mockResolvedValueOnce(testTaskList);
+    // 期待値の作成
+    const action = showTaskListAction.done({
+      result: testTaskList,
+      params: null,
+    });
+    // テスト実行
+    await getTaskList(dispatch);
+    // 検証
+    expect(dispatch).toBeCalledWith(action);
+  });
+  test('failed', async () => {
+    // モックの作成
+    loadTaskList.mockRejectedValueOnce(new Error()); // --(c)
+    // 期待値の作成
+    const action = showTaskListAction.failed({
+      error: 'ファイルの読み込みに失敗しました。',
+      params: null,
+    });
+    // テスト実行
+    await getTaskList(dispatch);
+    // 検証
+    expect(dispatch).toBeCalledWith(action);
+  });
+});
+```
+
+- (a)...引数として渡す`dispatch`関数をモックとして定義することで、`dispatch`が関数の中でコールされることを確認できます。
+- (b)...検査対象の関数の中で呼ばれる、core の関数をモック化します。
+- (c)...非同期関数が失敗(Reject を返す)するようになります。これで、`catch`の処理が実行され、その検証ができます。
+
+## Reducer のテスト
+
+Reducer は、現在の State と Action を引数に渡して、戻り値の State が期待値かどうかを確認します。
+
+```ts:__tests__/reducers/TaskReducer.test.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import reducer from '../../src/reducers/TaskReducer';
+import { ITaskList } from '../../src/states/ITask';
+
+describe('TaskReducer', () => {
+  // 非同期開始時
+  test('showTaskListAction: STARTED', () => {
+    const beforState: ITaskList = {
+      failedMessage: 'befor',
+      loading: false,
+      tasks: [],
+    };
+    const afterState = reducer(beforState, {
+      type: 'task-actions/show-task-list_STARTED',
+    } as any);
+    expect(afterState).toEqual({
+      failedMessage: '',
+      loading: true,
+      tasks: [],
+    });
+  });
+});
+```
+
+## Component のテスト
