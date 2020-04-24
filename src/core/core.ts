@@ -17,6 +17,23 @@ const setTimeoutPromise = (count: number): Promise<void> => {
   });
 };
 
+// テストのためにJSONの変換処理を別に定義する
+export const __private__ = {
+  reviver: (key: string, value: unknown): unknown => {
+    if (key === 'deadline') {
+      return new Date(value as string);
+    } else {
+      return value;
+    }
+  },
+  replacer: (key: string, value: unknown): unknown => {
+    if (key !== 'deadline') {
+      return value;
+    }
+    return new Date(value as string).toISOString();
+  },
+};
+
 const loadTaskList = async (): Promise<ITask[]> => {
   const exist = await fs.pathExists(dataFilePath); // ...(b)
   if (!exist) {
@@ -28,16 +45,10 @@ const loadTaskList = async (): Promise<ITask[]> => {
   // データファイルを読み込む ...(d)
   const jsonData = (await fs.readJSON(dataFilePath, {
     // 日付型は、数値で格納しているので、日付型に変換する
-    reviver: (key: string, value: unknown) => {
-      if (key === 'deadline') {
-        return new Date(value as string);
-      } else {
-        return value;
-      }
-    },
+    reviver: __private__.reviver,
   })) as { data: ITask[] };
   // 早すぎて非同期処理を実感できないので、ちょっと時間がかかる処理のシミュレート
-  await setTimeoutPromise(1000);
+  await setTimeoutPromise(500);
   return jsonData.data;
 };
 
@@ -46,12 +57,7 @@ const saveTaskList = async (taskList: ITask[]): Promise<void> => {
     dataFilePath,
     { data: taskList },
     {
-      replacer: (key: string, value: unknown) => {
-        if (key !== 'deadline') {
-          return value;
-        }
-        return new Date(value as string).toISOString();
-      },
+      replacer: __private__.replacer,
       spaces: 2,
     },
   );
@@ -59,7 +65,7 @@ const saveTaskList = async (taskList: ITask[]): Promise<void> => {
 
 const saveTask = async (task: ITask): Promise<ITask[]> => {
   // 早すぎて非同期処理を実感できないので、ちょっと時間がかかる処理のシミュレート
-  await setTimeoutPromise(1000);
+  await setTimeoutPromise(500);
   const taskList = await loadTaskList();
   const existTask = taskList.find(pTask => pTask.id === task.id);
   if (!task.id || !existTask) {
@@ -76,7 +82,7 @@ const saveTask = async (task: ITask): Promise<ITask[]> => {
 
 const deleteTask = async (id: string): Promise<ITask[]> => {
   // 早すぎて非同期処理を実感できないので、ちょっと時間がかかる処理のシミュレート
-  await setTimeoutPromise(1000);
+  await setTimeoutPromise(500);
   const taskList = await loadTaskList();
   const deletedTaskList = taskList.filter(task => task.id !== id);
   await saveTaskList(deletedTaskList);

@@ -17,5 +17,8 @@ export interface ITask {
 export interface ITaskList {
   /** タスクの一覧 */
   tasks: ITask[];
+  /** スキナーの表示 */
   loading: boolean;
+  /** 失敗時のメッセージ */
+  failedMessage: string;
 }
